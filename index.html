@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Minecraft Bedrock Chunk Finder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #1e1e1e;
+      color: white;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #top-bar {
+      background: #2b2b2b;
+      width: 100%;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #help-panel {
+      display: none;
+      background: #333;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 8px;
+      max-width: 500px;
+    }
+    #grid {
+      display: grid;
+      margin: 20px auto;
+      touch-action: none;
+      gap: 0;
+    }
+    .cell {
+      width: 8vw;
+      max-width: 30px;
+      aspect-ratio: 1 / 1;
+      background: white;
+      cursor: pointer;
+      user-select: none;
+    }
+    .cell.bedrock {
+      background: black;
+    }
+    button {
+      padding: 8px 12px;
+      margin: 5px;
+      font-size: 14px;
+      border: none;
+      border-radius: 5px;
+      background: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    pre {
+      background: #222;
+      padding: 10px;
+      border-radius: 5px;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      max-width: 90%;
+      margin: auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="top-bar">
+    <h2>Bedrock Chunk Finder (Y = -61)</h2>
+    <button onclick="toggleHelp()">Help</button>
+  </div>
+  <div id="help-panel">
+    <p><b>How to use:</b></p>
+    <ul>
+      <li>Click or drag to mark bedrock (black).</li>
+      <li>White squares are air blocks.</li>
+      <li>Use 8×8 or 16×16 grid sizes.</li>
+      <li>Click "Find Chunk" to get coordinates.</li>
+    </ul>
+  </div>
+
+  <div>
+    <strong>Grid Size:</strong>
+    <button onclick="setGridSize(8)">8×8</button>
+    <button onclick="setGridSize(16)">16×16</button>
+  </div>
+
+  <div id="grid"></div>
+  <button onclick="findChunk()">Find Chunk</button>
+  <button onclick="resetGrid()">Reset Grid</button>
+
+  <h3>Detected Chunk:</h3>
+  <pre id="output">Draw pattern and click Find Chunk</pre>
+
+  <script>
+    let size = 8;
+    const grid = document.getElementById('grid');
+    let cells = [];
+    let isDragging = false;
+
+    function createGrid() {
+      grid.innerHTML = '';
+      grid.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+      cells = [];
+
+      for (let i = 0; i < size * size; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+
+        cell.addEventListener('click', () => {
+          cell.classList.toggle('bedrock');
+        });
+
+        cell.addEventListener('mousedown', () => { 
+          isDragging = true; 
+          cell.classList.toggle('bedrock'); 
+        });
+        cell.addEventListener('mouseover', () => { 
+          if (isDragging) cell.classList.add('bedrock'); 
+        });
+
+        grid.appendChild(cell);
+        cells.push(cell);
+      }
+
+      document.body.addEventListener('mouseup', () => { isDragging = false; });
+    }
+
+    function setGridSize(newSize) {
+      if (confirm("Changing grid size will clear the current pattern. Continue?")) {
+        size = newSize;
+        createGrid();
+        document.getElementById('output').textContent = 'Draw pattern and click Find Chunk';
+      }
+    }
+
+    function resetGrid() {
+      if (confirm("Clear grid?")) {
+        cells.forEach(cell => cell.classList.remove('bedrock'));
+        document.getElementById('output').textContent = 'Draw pattern and click Find Chunk';
+      }
+    }
+
+    function getPattern() {
+      let pattern = [];
+      for (let y = 0; y < size; y++) {
+        let row = [];
+        for (let x = 0; x < size; x++) {
+          let index = y * size + x;
+          row.push(cells[index].classList.contains('bedrock') ? 1 : 0);
+        }
+        pattern.push(row);
+      }
+      return pattern;
+    }
+
+    function findChunk() {
+      let pattern = getPattern();
+      // Placeholder logic until real algorithm is added
+      let filled = pattern.flat().filter(v => v === 1).length;
+      let chunkX = filled * 16; // fake example
+      let chunkZ = filled * 8;  // fake example
+      document.getElementById('output').textContent = "Possible Chunk X: " + chunkX + " Z: " + chunkZ + "\\n(Pattern size: " + size + "x" + size + ")";
+    }
+
+    function toggleHelp() {
+      const panel = document.getElementById('help-panel');
+      panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    }
+
+    createGrid();
+  </script>
+</body>
+</html>
